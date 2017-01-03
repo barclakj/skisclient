@@ -10,7 +10,7 @@ import junit.framework.TestCase;
 public class TestClient extends TestCase {
 
     static {
-        SkiClient.ROOT_URL = "http://192.168.0.4:9080/rest";
+        SkiClient.ROOT_URL = "http://localhost:9080";
     }
 
     public void testCreateToken() {
@@ -37,7 +37,7 @@ public class TestClient extends TestCase {
         try {
             String tkn = client.createToken(identity);
             assertNotNull(tkn);
-            String key = client.createKey(keyName, tkn);
+            byte[] key = client.createKey(keyName, tkn);
             assertNotNull(key);
             System.out.println("Successfully created key: " + key);
 
@@ -58,14 +58,19 @@ public class TestClient extends TestCase {
         try {
             String tkn = client.createToken(identity);
             assertNotNull(tkn);
-            String key = client.createKey(keyName, "rudolph", tkn);
+            byte[] key = client.createKey(keyName, "rudolph".getBytes(), tkn);
             assertNotNull(key);
-            assertEquals("rudolph", key);
+            String ks = new String(key);
+            assertNotNull(ks);
+            System.out.println("Key val: " + ks);
+            assertEquals("rudolph", ks);
             System.out.println("Successfully created key");
 
             key = client.getKey(keyName, tkn);
-            assertNotNull(key);
-            assertEquals("rudolph", key);
+            ks = new String(key);
+            assertNotNull(ks);
+            System.out.println("Key val: " + ks);
+            assertEquals("rudolph", ks);
             System.out.println("Successfully retrieved key");
 
         } catch (SkiClientException e) {
@@ -99,9 +104,9 @@ public class TestClient extends TestCase {
         try {
             String tkn = client.createToken(identity);
             assertNotNull(tkn);
-            String key = client.createKey(keyName, "santa", tkn);
+            byte[] key = client.createKey(keyName, "santa".getBytes(), tkn);
             assertNotNull(key);
-            assertEquals("santa", key);
+            assertEquals("santa", new String(key));
             System.out.println("Successfully created key");
 
             String newtkn = client.grantToken("vampire", tkn);
@@ -109,7 +114,7 @@ public class TestClient extends TestCase {
 
             key = client.getKey(keyName, newtkn);
             assertNotNull(key);
-            assertEquals("santa", key);
+            assertEquals("santa", new String(key));
             System.out.println("Successfully retrieved key using new token");
 
         } catch (SkiClientException e) {

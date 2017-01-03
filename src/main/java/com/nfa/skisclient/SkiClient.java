@@ -25,10 +25,10 @@ import java.util.logging.Logger;
 public class SkiClient implements Ski {
     private static Logger log = Logger.getLogger(SkiClient.class.getCanonicalName());
 
-    public static String ROOT_URL = "http://localhost:9080/rest";
-    private static final String TOKEN_PATH = "/tokens";
+    public static String ROOT_URL = "http://localhost:9080";
+    private static final String TOKEN_PATH = "/rest/tokens";
     private static final String GRANT_PATH = "/grant";
-    private static final String KEY_PATH = "/keys";
+    private static final String KEY_PATH = "/rest/keys";
 
     private static final String ENCODING = "UTF-8";
     private static final String UA = "User-Agent";
@@ -53,7 +53,7 @@ public class SkiClient implements Ski {
                 BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
                 String line;
-                StringBuffer result = new StringBuffer();
+                StringBuilder result = new StringBuilder();
                 while ((line = rd.readLine()) != null) {
                     result.append(line);
                 }
@@ -85,7 +85,7 @@ public class SkiClient implements Ski {
                 BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
                 String line;
-                StringBuffer result = new StringBuffer();
+                StringBuilder result = new StringBuilder();
                 while ((line = rd.readLine()) != null) {
                     result.append(line);
                 }
@@ -117,7 +117,7 @@ public class SkiClient implements Ski {
                 BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
                 String line;
-                StringBuffer result = new StringBuffer();
+                StringBuilder result = new StringBuilder();
                 while ((line = rd.readLine()) != null) {
                     result.append(line);
                 }
@@ -133,8 +133,8 @@ public class SkiClient implements Ski {
         return token;
     }
 
-    public String createKey(String keyName, String keyValue, String token) throws SkiClientException {
-        String key = null;
+    public byte[] createKey(String keyName, byte[] keyValue, String token) throws SkiClientException {
+        byte[] key = null;
         try {
             String url = ROOT_URL + KEY_PATH + "/" + URLEncoder.encode(keyName, ENCODING);
             HttpPost request = new HttpPost(url);
@@ -142,8 +142,10 @@ public class SkiClient implements Ski {
             request.addHeader(SkiConstants.TOKEN_HEAD, token);
 
             List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-            urlParameters.add(new BasicNameValuePair("keyvalue", keyValue));
 
+            if (keyValue!=null) {
+                urlParameters.add(new BasicNameValuePair("keyvalue", SkiResponseHandler.b64encode(keyValue)));
+            }
             request.setEntity(new UrlEncodedFormEntity(urlParameters));
 
             HttpResponse response = client.execute(request);
@@ -154,7 +156,7 @@ public class SkiClient implements Ski {
                 BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
                 String line;
-                StringBuffer result = new StringBuffer();
+                StringBuilder result = new StringBuilder();
                 while ((line = rd.readLine()) != null) {
                     result.append(line);
                 }
@@ -170,12 +172,12 @@ public class SkiClient implements Ski {
         return key;
     }
 
-    public String createKey(String keyName, String token) throws SkiClientException {
+    public byte[] createKey(String keyName, String token) throws SkiClientException {
         return createKey(keyName, null, token);
     }
 
-    public String getKey(String keyName, String token) throws SkiClientException {
-        String key = null;
+    public byte[] getKey(String keyName, String token) throws SkiClientException {
+        byte[] key = null;
         try {
             String url = ROOT_URL + KEY_PATH + "/" + URLEncoder.encode(keyName, ENCODING);
             HttpGet request = new HttpGet(url);
@@ -190,7 +192,7 @@ public class SkiClient implements Ski {
                 BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
                 String line;
-                StringBuffer result = new StringBuffer();
+                StringBuilder result = new StringBuilder();
                 while ((line = rd.readLine()) != null) {
                     result.append(line);
                 }
