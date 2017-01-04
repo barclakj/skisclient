@@ -8,7 +8,8 @@ public interface Ski {
     void revokeIdentity(String identity, String token) throws SkiClientException;
     String grantToken(String identity, String token) throws SkiClientException;
     String createToken(String identity) throws SkiClientException;
-    byte[] createKey(String keyName, byte[] keyValue, String token) throws SkiClientException;
+    byte[] createKey(String keyName, byte[] keyValue, int size, String token) throws SkiClientException;
+    byte[] createKey(String keyName, int size, String token) throws SkiClientException;
     byte[] createKey(String keyName, String token) throws SkiClientException;
     byte[] getKey(String keyName, String token) throws SkiClientException;
 }

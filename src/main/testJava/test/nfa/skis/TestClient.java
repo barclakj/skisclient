@@ -10,7 +10,7 @@ import junit.framework.TestCase;
 public class TestClient extends TestCase {
 
     static {
-        SkiClient.ROOT_URL = "http://localhost:9080";
+        SkiClient.setRootUrl("http://localhost:9080");
     }
 
     public void testCreateToken() {
@@ -58,7 +58,7 @@ public class TestClient extends TestCase {
         try {
             String tkn = client.createToken(identity);
             assertNotNull(tkn);
-            byte[] key = client.createKey(keyName, "rudolph".getBytes(), tkn);
+            byte[] key = client.createKey(keyName, "rudolph".getBytes(), 0, tkn);
             assertNotNull(key);
             String ks = new String(key);
             assertNotNull(ks);
@@ -104,7 +104,7 @@ public class TestClient extends TestCase {
         try {
             String tkn = client.createToken(identity);
             assertNotNull(tkn);
-            byte[] key = client.createKey(keyName, "santa".getBytes(), tkn);
+            byte[] key = client.createKey(keyName, "santa".getBytes(), 0, tkn);
             assertNotNull(key);
             assertEquals("santa", new String(key));
             System.out.println("Successfully created key");

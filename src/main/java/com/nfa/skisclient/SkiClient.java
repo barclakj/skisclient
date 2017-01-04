@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 public class SkiClient implements Ski {
     private static Logger log = Logger.getLogger(SkiClient.class.getCanonicalName());
 
-    public static String ROOT_URL = "http://localhost:9080";
+    private static String ROOT_URL = "http://localhost:9080";
     private static final String TOKEN_PATH = "/rest/tokens";
     private static final String GRANT_PATH = "/grant";
     private static final String KEY_PATH = "/rest/keys";
@@ -37,6 +37,14 @@ public class SkiClient implements Ski {
     private static final String USER_AGENT = SkiClient.class.getCanonicalName();
 
     private HttpClient client = HttpClientBuilder.create().build();
+
+    public static String getRootUrl() {
+        return ROOT_URL;
+    }
+
+    public static void setRootUrl(String rootUrl) {
+        ROOT_URL = rootUrl;
+    }
 
     public void revokeIdentity(String identity, String token) throws SkiClientException {
         try {
@@ -133,7 +141,7 @@ public class SkiClient implements Ski {
         return token;
     }
 
-    public byte[] createKey(String keyName, byte[] keyValue, String token) throws SkiClientException {
+    public byte[] createKey(String keyName, byte[] keyValue, int keysize, String token) throws SkiClientException {
         byte[] key = null;
         try {
             String url = ROOT_URL + KEY_PATH + "/" + URLEncoder.encode(keyName, ENCODING);
@@ -145,6 +153,12 @@ public class SkiClient implements Ski {
 
             if (keyValue!=null) {
                 urlParameters.add(new BasicNameValuePair("keyvalue", SkiResponseHandler.b64encode(keyValue)));
+            }
+
+            if (keysize>0) {
+                urlParameters.add(new BasicNameValuePair("keysize", "" + keysize));
+            } else {
+                urlParameters.add(new BasicNameValuePair("keysize", "0"));
             }
             request.setEntity(new UrlEncodedFormEntity(urlParameters));
 
@@ -173,8 +187,13 @@ public class SkiClient implements Ski {
     }
 
     public byte[] createKey(String keyName, String token) throws SkiClientException {
-        return createKey(keyName, null, token);
+        return createKey(keyName, null, 0, token);
     }
+
+    public byte[] createKey(String keyName, int keysize, String token) throws SkiClientException {
+        return createKey(keyName, null, keysize, token);
+    }
+
 
     public byte[] getKey(String keyName, String token) throws SkiClientException {
         byte[] key = null;
