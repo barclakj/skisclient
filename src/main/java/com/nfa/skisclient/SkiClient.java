@@ -7,6 +7,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -186,12 +187,57 @@ public class SkiClient implements Ski {
         return key;
     }
 
+    public byte[] updateKey(String keyName, byte[] keyValue, int keysize, String token) throws SkiClientException {
+        byte[] key = null;
+        try {
+            String url = ROOT_URL + KEY_PATH + "/" + URLEncoder.encode(keyName, ENCODING);
+            HttpPut request = new HttpPut(url);
+            request.addHeader(UA, USER_AGENT);
+            request.addHeader(SkiConstants.TOKEN_HEAD, token);
+
+            List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+
+            if (keyValue!=null) {
+                urlParameters.add(new BasicNameValuePair("keyvalue", SkiResponseHandler.b64encode(keyValue)));
+            }
+
+            if (keysize>0) {
+                urlParameters.add(new BasicNameValuePair("keysize", "" + keysize));
+            } else {
+                urlParameters.add(new BasicNameValuePair("keysize", "0"));
+            }
+            request.setEntity(new UrlEncodedFormEntity(urlParameters));
+
+            HttpResponse response = client.execute(request);
+            int code = response.getStatusLine().getStatusCode();
+            log.info("Response Code : " + code);
+
+            if (code == 200) {
+                BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+
+                String line;
+                StringBuilder result = new StringBuilder();
+                while ((line = rd.readLine()) != null) {
+                    result.append(line);
+                }
+                key = SkiResponseHandler.retrieveKey(result.toString());
+                log.info("key = " + key);
+            } else {
+                log.warning("Unexpected response code creating key: " + code);
+                throw new SkiClientException("" + code);
+            }
+        } catch (IOException e) {
+            log.log(Level.WARNING, e.getMessage(), e);
+        }
+        return key;
+    }
+
     public byte[] createKey(String keyName, String token) throws SkiClientException {
         return createKey(keyName, null, 0, token);
     }
 
-    public byte[] createKey(String keyName, int keysize, String token) throws SkiClientException {
-        return createKey(keyName, null, keysize, token);
+    public byte[] updateKey(String keyName, String token) throws SkiClientException {
+        return updateKey(keyName, null, 0, token);
     }
 
 
